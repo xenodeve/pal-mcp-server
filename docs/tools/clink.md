@@ -78,7 +78,7 @@ You can make your own custom roles in `conf/cli_clients/` or tweak any of the sh
 ## Tool Parameters
 
 - `prompt`: Your question or task for the external CLI (required)
-- `cli_name`: Which CLI to use - `gemini` (default), `claude`, `codex`, or add your own in `conf/cli_clients/`
+- `cli_name`: Which CLI to use - `gemini` (default), `claude`, `codex`, `antigravity` (fork addition, see below), or add your own in `conf/cli_clients/`
 - `role`: Preset role - `default`, `planner`, `codereviewer` (default: `default`)
 - `files`: Optional file paths for context (references only, CLI opens files itself)
 - `images`: Optional image paths for visual context
@@ -141,6 +141,8 @@ Clink configurations live in `conf/cli_clients/`. We ship presets for the suppor
 - `gemini.json` – runs `gemini --telemetry false --yolo -o json`
 - `claude.json` – runs `claude --print --output-format json --permission-mode acceptEdits --model sonnet`
 - `codex.json` – runs `codex exec --json --dangerously-bypass-approvals-and-sandbox`
+- `antigravity.json` – **fork addition** – runs Google's Antigravity CLI (`agy`, the Gemini CLI's 2026 successor). See [CHANGES-FORK.md](../../CHANGES-FORK.md) for how it works and why it needs a Windows ConPTY.
+- `claude-9arm.json.example` – **fork addition** – template showing how to point the `claude` runner at an alternate OpenAI-compatible model gateway instead of Anthropic's own models. Copy to `claude-9arm.json`, fill in the placeholders, and it becomes a new `cli_name` you can clink to.
 
 > **CAUTION**: These flags intentionally bypass each CLI's safety prompts so they can edit files or launch tools autonomously via MCP. Only enable them in trusted sandboxes and tailor role prompts or CLI configs if you need more guardrails.
 

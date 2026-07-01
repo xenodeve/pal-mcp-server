@@ -1,5 +1,7 @@
 # PAL MCP: Many Workflows. One Context.
 
+> **This is a fork** of [BeehiveInnovations/pal-mcp-server](https://github.com/BeehiveInnovations/pal-mcp-server) that adds two `clink` agents: `antigravity` (Google's post-Gemini-CLI tool, driven via a Windows ConPTY) and a `claude-9arm` example config (Claude Code CLI against an alternate model gateway). See [CHANGES-FORK.md](CHANGES-FORK.md) for details — everything else is unchanged upstream.
+
 <div align="center">
 
   <em>Your AI's PAL – a Provider Abstraction Layer</em><br />

@@ -1,0 +1,26 @@
+{
+  "name": "claude-9arm",
+  "_comment": "Example: run the Claude Code CLI against an alternate OpenAI-compatible model gateway instead of Anthropic's own models. Rename this file to claude-9arm.json (or any name matching the 'name' field) and fill in your own claude.exe path + gateway settings file to activate it.",
+  "command": "REPLACE_WITH_ABSOLUTE_PATH_TO_claude.exe",
+  "additional_args": [
+    "--settings",
+    "REPLACE_WITH_ABSOLUTE_PATH_TO_your_gateway_settings.json",
+    "--model",
+    "REPLACE_WITH_YOUR_GATEWAY_MODEL_ID"
+  ],
+  "env": {},
+  "roles": {
+    "default": {
+      "prompt_path": "systemprompts/clink/default.txt",
+      "role_args": []
+    },
+    "planner": {
+      "prompt_path": "systemprompts/clink/default_planner.txt",
+      "role_args": []
+    },
+    "codereviewer": {
+      "prompt_path": "systemprompts/clink/default_codereviewer.txt",
+      "role_args": []
+    }
+  }
+}
