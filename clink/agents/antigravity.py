@@ -27,6 +27,27 @@ from .base import AgentOutput, BaseCLIAgent, CLIAgentError
 class AntigravityAgent(BaseCLIAgent):
     """Run `agy` inside a ConPTY and capture its plain-text output."""
 
+    def _build_command(
+        self,
+        *,
+        role: ResolvedCLIRole,
+        system_prompt: str | None = None,
+        model: str | None = None,
+        reasoning_effort: str | None = None,
+    ) -> list[str]:
+        # agy's `--print` (carried in internal_args) is VALUE-TAKING — it consumes the
+        # NEXT token as the prompt. base.py appends model options LAST, producing
+        # `agy --print --model "X" <prompt>` where `--print` swallows `--model` as its
+        # value (prompt), leaving model empty so agy silently uses the persisted default
+        # (verified live). Place model options right after the executable, before
+        # `--print`, so the requested model actually reaches the backend.
+        command = list(self.client.executable)
+        command.extend(self._model_args(model, reasoning_effort))
+        command.extend(self.client.internal_args)
+        command.extend(self.client.config_args)
+        command.extend(role.role_args)
+        return command
+
     async def run(
         self,
         *,
@@ -64,6 +85,17 @@ class AntigravityAgent(BaseCLIAgent):
             self._run_in_pty, full_command, env, cwd, self.client.timeout_seconds
         )
         duration = time.monotonic() - start_time
+
+        # Fail closed: agy exits non-zero (with a catalog error) when a requested model
+        # is unsupported/rejected. Raise instead of returning the fallback as success,
+        # so a bad `--model` surfaces as an error rather than a silent wrong-model reply.
+        if returncode != 0:
+            raise CLIAgentError(
+                f"CLI '{self.client.name}' exited with status {returncode} "
+                "(a requested model may be unsupported/rejected)",
+                returncode=returncode,
+                stdout=raw_output,
+            )
 
         try:
             parsed = self._parser.parse(raw_output, "")

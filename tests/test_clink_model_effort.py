@@ -72,3 +72,34 @@ def test_no_overrides_leaves_command_unchanged():
     client, role = _client("codex", "codex_jsonl")
     agent = CodexAgent(client)
     assert agent._build_command(role=role, system_prompt=None) == ["codex"]
+
+
+def test_antigravity_places_model_before_print():
+    # agy's `--print` is VALUE-TAKING (it consumes the next token as the prompt), so
+    # `--model` MUST precede `--print` or agy swallows it as the prompt and silently
+    # falls back to the persisted default model. AntigravityAgent reorders so model
+    # options come before `--print` (verified live: wrong order -> Gemini default,
+    # right order -> the requested model reaches the backend).
+    from clink.agents.antigravity import AntigravityAgent
+
+    prompt_path = Path("systemprompts/clink/default.txt").resolve()
+    role = ResolvedCLIRole(name="default", prompt_path=prompt_path, role_args=[])
+    client = ResolvedCLIClient(
+        name="antigravity",
+        executable=["agy"],
+        internal_args=["--print"],
+        config_args=[],
+        env={},
+        timeout_seconds=30,
+        parser="antigravity_text",
+        runner="antigravity",
+        roles={"default": role},
+        output_to_file=None,
+        working_dir=None,
+    )
+    agent = AntigravityAgent(client)
+    cmd = agent._build_command(
+        role=role, system_prompt=None, model="Claude Sonnet 4.6 (Thinking)"
+    )
+    assert cmd == ["agy", "--model", "Claude Sonnet 4.6 (Thinking)", "--print"]
+    assert cmd.index("--model") < cmd.index("--print")

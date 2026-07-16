@@ -49,6 +49,16 @@ clink(cli_name="codex", model="gpt-5.6-luna", reasoning_effort="high", prompt="�
 clink(cli_name="antigravity", model="Claude Opus 4.6 (Thinking)",      prompt="…")  # non-OpenAI check
 ```
 
+**Antigravity `--model` ordering (critical).** `agy`'s `--print` flag is **value-taking** — it
+consumes the next token as the prompt. The naive order `agy --print --model "X" "<prompt>"`
+makes `--print` swallow `--model` as its value, so `agy` runs with an empty model and silently
+falls back to the persisted default (verified live: it reports *Gemini 3.5 Flash* regardless of
+the requested model). `AntigravityAgent._build_command()` therefore places model options
+**before** `--print` → `agy --model "X" --print "<prompt>"`, which live-testing confirmed makes
+the requested model reach the backend. `AntigravityAgent.run()` also now **fails closed**:
+`agy` exits non-zero (with a catalog error) on an unsupported model, so the runner raises instead
+of returning the fallback as success. Covered by `test_antigravity_places_model_before_print`.
+
 ## Known gotchas carried over from development
 
 - **Config is cached at process start.** Any edit to `conf/cli_clients/*.json` or `clink/constants.py` needs a full MCP server restart before it takes effect — don't conclude a config fix didn't work until you've restarted and retried.
