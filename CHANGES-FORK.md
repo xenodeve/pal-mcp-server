@@ -59,6 +59,38 @@ the requested model reach the backend. `AntigravityAgent.run()` also now **fails
 `agy` exits non-zero (with a catalog error) on an unsupported model, so the runner raises instead
 of returning the fallback as success. Covered by `test_antigravity_places_model_before_print`.
 
+### Activate machine-local clients in `~/.pal/cli_clients/` (survives reinstalls, shared across installs)
+
+Editing the bundled `conf/cli_clients/*.json` inside an installed package (site-packages) is
+**ephemeral** — `uv tool install --force` / a `uvx` refresh overwrites it, and each install
+location (uv-tool vs uvx) has its own copy. Instead, put machine-specific activations in the
+**user config dir the registry already reads last (so it overrides the bundled config):
+`~/.pal/cli_clients/*.json`** (`USER_CONFIG_DIR` in `clink/constants.py`; also honored:
+`CLI_CLIENTS_CONFIG_PATH`). Configs there:
+
+- **persist across reinstalls** (they're outside the package), and
+- are read by **every** PAL instance on the machine — so a client activated once is available to
+  both your editor's PAL (a `uv tool install`) and another tool's PAL (e.g. Codex's `uvx --from
+  git+…` launch) with no per-install setup.
+
+Use it for the two things the bundled config can't ship portably — an **absolute executable path**
+(when the CLI isn't on the PAL process's `PATH`) and **activating `claude-9arm`** against your
+gateway. Drop-in examples (fill in your own paths / model):
+
+`~/.pal/cli_clients/antigravity.json` (absolute `agy` so it resolves regardless of PAL's PATH):
+```json
+{ "name": "antigravity", "command": "C:/…/agy.exe", "additional_args": [],
+  "roles": { "default": { "prompt_path": "systemprompts/clink/default.txt", "role_args": [] } } }
+```
+`~/.pal/cli_clients/claude-9arm.json` (activate the Claude-Code-through-a-gateway client):
+```json
+{ "name": "claude-9arm", "command": "C:/…/claude.exe",
+  "additional_args": ["--settings","C:/…/your-gateway.json","--model","<gateway-model-id>"],
+  "roles": { "default": { "prompt_path": "systemprompts/clink/default.txt", "role_args": [] } } }
+```
+Keep `prompt_path` **relative** (`systemprompts/clink/…`) so it resolves against each install's own
+package root, not a hard-coded location. Restart PAL after adding files (config is cached at start).
+
 ## Known gotchas carried over from development
 
 - **Config is cached at process start.** Any edit to `conf/cli_clients/*.json` or `clink/constants.py` needs a full MCP server restart before it takes effect — don't conclude a config fix didn't work until you've restarted and retried.
