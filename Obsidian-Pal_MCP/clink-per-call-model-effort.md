@@ -20,6 +20,7 @@ agent that `CodexAgent` overrides. Support differs by back-end (all live-verifie
 - **claude / gemini** — base `--model`; effort ignored.
 
 **How to apply:** dial codex effort up for the hardest leaf / down for cheap mechanical work; for
-antigravity, pick effort via the model label; don't expect graded effort on claude/gateway. See
-`docs/reports/2026-07-16-model-effort-capability-matrix.md`. Related:
+antigravity, pick effort via the model label; don't expect graded effort on claude/gateway. The
+per-back-end capability + routing matrix lives with the delegation skills (xeno-skills
+`docs/research/2026-07-16-model-effort-capability-matrix.md`). Related:
 [[clink-zero-setup-discovery]], [[antigravity-quota-split]].

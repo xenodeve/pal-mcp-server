@@ -30,8 +30,9 @@ and omitting them reproduces the previous command exactly (backward compatible).
 - Adding a back-end with a different model/effort contract = one `_model_args()` override, not a
   shared-flag change. The base default (`--model`) covers claude/gemini/antigravity.
 - `reasoning_effort` is intentionally a **no-op** where the CLI has no such flag (antigravity: use the
-  model label; claude/gateway: none). This asymmetry is by design, documented in the support matrix
-  (`docs/reports/2026-07-16-model-effort-capability-matrix.md`).
+  model label; claude/gateway: none). This asymmetry is by design; the per-back-end support matrix +
+  routing guidance live with the delegation skills
+  ([xeno-skills `docs/research/`](https://github.com/xenodeve/xeno-skills/tree/main/docs/research)).
 - Correctness of the flags reaching the *model* is CLI-specific and not provable from a
   `_build_command` unit test — validate against the real CLI (this is exactly how the Antigravity
   `--print`/`--model` ordering bug hid behind green unit tests).
