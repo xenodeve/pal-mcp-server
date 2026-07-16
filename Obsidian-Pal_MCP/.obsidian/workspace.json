@@ -1,0 +1,185 @@
+{
+  "main": {
+    "id": "46669fcbf95214c9",
+    "type": "split",
+    "children": [
+      {
+        "id": "01f14cd669c43214",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8385955c6628fd0b",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "แท็บใหม่"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "4796758a02b38e39",
+    "type": "split",
+    "children": [
+      {
+        "id": "d390ca2e4174b2ec",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "bc076ad877b9be22",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "File explorer"
+            }
+          },
+          {
+            "id": "10714ccd0db5204e",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "ค้นหา"
+            }
+          },
+          {
+            "id": "baf5310d0fcf1942",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "บุ๊กมาร์ก"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "c778566197d27f5a",
+    "type": "split",
+    "children": [
+      {
+        "id": "3b353c89084cadae",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "e93e16f86bf7b41d",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "แบ็คลิงค์"
+            }
+          },
+          {
+            "id": "4024cf3fc3dd6a35",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "ลิงค์ขาออก"
+            }
+          },
+          {
+            "id": "a9ee9343478dc593",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "แท็ก"
+            }
+          },
+          {
+            "id": "c78397e5d6e51315",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "คุณสมบัติทั้งหมด"
+            }
+          },
+          {
+            "id": "fd7d8118db6f1fc5",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "โครงเรื่อง"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:เปิด quick switcher": false,
+      "graph:เปิดมุมมองกราฟ": false,
+      "canvas:สร้างผืนผ้าใบใหม่": false,
+      "daily-notes:เปิดโน้ตของวันนี้": false,
+      "templates:แทรกเทมเพลต": false,
+      "command-palette:เปิดกระดานคำสั่ง": false,
+      "bases:สร้างฐานใหม่": false
+    }
+  },
+  "active": "8385955c6628fd0b",
+  "lastOpenFiles": [
+    "Home.md",
+    "ยินดีต้อนรับ.md",
+    "Home.md.tmp.60688.1da8331764c1"
+  ]
+}

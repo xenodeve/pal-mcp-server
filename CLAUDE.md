@@ -7,7 +7,7 @@ This file contains essential commands and workflows for developing and maintaini
 This fork is run **agent-primary** under the T4 operating standard. **At session start, before picking up work:**
 
 1. Invoke **`karpathy-guidelines`** (surgical, simple, verify) and **`using-t4`** (the entry map).
-2. Read **`docs/OPEN-WORK-LEDGER.md`** (open work) and **`DONE.md`** (what shipped + how it was validated).
+2. Read **`Obsidian-Pal_MCP/Home.md`** (memory vault index — open only the notes your task touches), **`docs/OPEN-WORK-LEDGER.md`** (open work), and **`DONE.md`** (what shipped + how it was validated).
 3. Then the specific GitHub issue you're picking up (`gh issue view <n> --repo xenodeve/pal-mcp-server`).
 
 Non-negotiables (details in `docs/agents/`): **issue → PR gate** (no PR without a referenced issue);
