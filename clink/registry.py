@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import shlex
 from collections.abc import Iterable
 from pathlib import Path
 
+from clink.discovery import resolve_cli_command
 from clink.constants import (
     CONFIG_DIR,
     DEFAULT_TIMEOUT_SECONDS,
@@ -137,7 +139,9 @@ class ClinkRegistry:
         executable = self._resolve_executable(raw, internal_defaults, source_path)
 
         internal_args = list(internal_defaults.additional_args) if internal_defaults else []
-        config_args = list(raw.additional_args)
+        # Expand ~ and %VAR%/$VAR in config args so bundled configs can reference
+        # user-profile paths portably (e.g. a gateway `--settings ~/.claude-9arm.json`).
+        config_args = [os.path.expandvars(os.path.expanduser(a)) for a in raw.additional_args]
 
         timeout_seconds = raw.timeout_seconds or (
             internal_defaults.timeout_seconds if internal_defaults else DEFAULT_TIMEOUT_SECONDS
@@ -180,7 +184,13 @@ class ClinkRegistry:
         command = raw.command
         if not command:
             raise RegistryLoadError(f"CLI '{raw.name}' must specify a 'command' in configuration")
-        return shlex.split(command)
+        tokens = shlex.split(command)
+        if tokens:
+            # Resolve a bare command name to an absolute path via PATH + known install
+            # locations, so bundled configs work with zero setup even when the CLI isn't
+            # on PAL's process PATH. Unresolved names pass through → clear call-time error.
+            tokens[0] = resolve_cli_command(tokens[0])
+        return tokens
 
     def _merge_env(
         self,

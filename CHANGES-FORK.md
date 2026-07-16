@@ -59,7 +59,28 @@ the requested model reach the backend. `AntigravityAgent.run()` also now **fails
 `agy` exits non-zero (with a catalog error) on an unsupported model, so the runner raises instead
 of returning the fallback as success. Covered by `test_antigravity_places_model_before_print`.
 
-### Activate machine-local clients in `~/.pal/cli_clients/` (survives reinstalls, shared across installs)
+### Zero-setup CLI discovery + active `claude-9arm`
+
+Install PAL the normal way (README) and `codex`, `antigravity` (`agy`), and `claude-9arm` work
+**with no extra setup** — if the CLI is installed on the machine. How:
+
+- **Executable discovery** (`clink/discovery.py`, wired into the registry): a client's bare
+  `command` (`agy`/`claude`/`codex`/`gemini`) is resolved to an absolute path via **PATH first,
+  then per-CLI known install locations** (winget, `%LOCALAPPDATA%\agy\bin`, `npm`, …). This fixes
+  the common case where the editor launches PAL with a minimal `PATH` that omits user-profile
+  install dirs. If nothing resolves, the bare name passes through and the **call fails with a
+  clear "not found in PATH"** — a missing CLI is a graceful per-client error, not a load failure.
+- **`config_args` are `~`/`%VAR%`-expanded** at load, so a bundled preset can reference a
+  user-profile path portably (e.g. `--settings ~/.claude-9arm.json`).
+- **`conf/cli_clients/claude-9arm.json` ships active** (this fork's 9arm Qwen gateway): bare
+  `claude` (discovery-resolved) + `--settings ~/.claude-9arm.json --model qwen3.6-35b-a3b`. Absent
+  `claude.exe` or gateway settings → the usual "not found" at call time. (`claude-9arm.json.example`
+  stays as the generic template for a different gateway.)
+
+Net: a fresh `uv tool install` / `uvx` launch exposes all four/five clients; the ones whose CLI is
+present run, the rest report "not found" when called.
+
+### Overriding paths/gateways in `~/.pal/cli_clients/` (survives reinstalls, shared across installs)
 
 Editing the bundled `conf/cli_clients/*.json` inside an installed package (site-packages) is
 **ephemeral** — `uv tool install --force` / a `uvx` refresh overwrites it, and each install
