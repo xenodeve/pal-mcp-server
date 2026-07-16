@@ -14,6 +14,16 @@ class CodexAgent(BaseCLIAgent):
     def __init__(self, client: ResolvedCLIClient):
         super().__init__(client)
 
+    def _model_args(self, model: str | None, reasoning_effort: str | None) -> list[str]:
+        # Codex takes the model and the reasoning effort as separate knobs:
+        #   -m <model>   -c model_reasoning_effort=<low|medium|high|xhigh|max>
+        args: list[str] = []
+        if model:
+            args += ["-m", model]
+        if reasoning_effort:
+            args += ["-c", f"model_reasoning_effort={reasoning_effort}"]
+        return args
+
     def _recover_from_error(
         self,
         *,

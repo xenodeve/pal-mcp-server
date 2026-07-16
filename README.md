@@ -1,182 +1,141 @@
-# PAL MCP: Many Workflows. One Context.
+# PAL MCP: หลายเวิร์กโฟลว์ บริบทเดียว
 
-> **This is a fork** of [BeehiveInnovations/pal-mcp-server](https://github.com/BeehiveInnovations/pal-mcp-server) that adds two `clink` agents: `antigravity` (Google's post-Gemini-CLI tool, driven via a Windows ConPTY) and a `claude-9arm` example config (Claude Code CLI against an alternate model gateway). See [CHANGES-FORK.md](CHANGES-FORK.md) for details — everything else is unchanged upstream.
+**🇹🇭 ภาษาไทย · 🇬🇧 [English](README.en.md)**
+
+> **นี่คือ fork** ของ [BeehiveInnovations/pal-mcp-server](https://github.com/BeehiveInnovations/pal-mcp-server) (ต้นทางหยุดดูแลตั้งแต่ ~กลางปี 2026) โดยเพิ่มแบบ additive ล้วน ไม่แตะพฤติกรรมเดิม:
+> - **`antigravity`** — clink agent สำหรับ Antigravity CLI (`agy`) ตัวสืบทอดจาก Gemini CLI ของ Google ขับผ่าน Windows ConPTY
+> - **`claude-9arm`** — config ตัวอย่างชี้ Claude Code CLI ไปยัง model gateway ทางเลือก
+> - **override `model` / `reasoning_effort` ต่อ call** ของ clink (Codex ใช้ `-m` + effort; ตัวอื่นใช้ `--model`)
+>
+> รายละเอียด: [CHANGES-FORK.md](CHANGES-FORK.md) และ [คู่มือ clink model/effort](docs/clink-model-effort-guide.md) — ส่วนอื่นเหมือน upstream ทุกอย่าง
 
 <div align="center">
 
-  <em>Your AI's PAL – a Provider Abstraction Layer</em><br />
-  <sub><a href="docs/name-change.md">Formerly known as Zen MCP</a></sub>
+  <em>PAL ของ AI คุณ — Provider Abstraction Layer</em><br />
+  <sub><a href="docs/name-change.md">เดิมชื่อ Zen MCP</a></sub>
 
   [PAL in action](https://github.com/user-attachments/assets/0d26061e-5f21-4ab1-b7d0-f883ddc2c3da)
 
-👉 **[Watch more examples](#-watch-tools-in-action)**
+👉 **[ดูตัวอย่างเพิ่มเติม](#-ดูเครื่องมือทำงานจริง)**
 
-### Your CLI + Multiple Models = Your AI Dev Team
+### CLI ที่คุณใช้ + หลายโมเดล = ทีมพัฒนา AI ของคุณ
 
-**Use the 🤖 CLI you love:**  
-[Claude Code](https://www.anthropic.com/claude-code) · [Gemini CLI](https://github.com/google-gemini/gemini-cli) · [Codex CLI](https://github.com/openai/codex) · [Qwen Code CLI](https://qwenlm.github.io/qwen-code-docs/) · [Cursor](https://cursor.com) · _and more_
+**ใช้ 🤖 CLI ที่คุณถนัด:**
+[Claude Code](https://www.anthropic.com/claude-code) · [Codex CLI](https://github.com/openai/codex) · [Antigravity (`agy`)](https://antigravity.google) · [Qwen Code CLI](https://qwenlm.github.io/qwen-code-docs/) · [Cursor](https://cursor.com) · _และอื่น ๆ_
 
-**With multiple models within a single prompt:**  
-Gemini · OpenAI · Anthropic · Grok · Azure · Ollama · OpenRouter · DIAL · On-Device Model
+**พร้อมหลายโมเดลในพรอมป์ตเดียว:**
+Gemini · OpenAI · Anthropic · Grok · Azure · Ollama · OpenRouter · DIAL · โมเดลบนเครื่อง
 
 </div>
 
 ---
 
-## 🆕 Now with CLI-to-CLI Bridge
+## 🆕 มีสะพาน CLI-to-CLI แล้ว
 
-The new **[`clink`](docs/tools/clink.md)** (CLI + Link) tool connects external AI CLIs directly into your workflow:
+เครื่องมือ **[`clink`](docs/tools/clink.md)** (CLI + Link) เชื่อม AI CLI ภายนอกเข้ามาในเวิร์กโฟลว์คุณโดยตรง:
 
-- **Connect external CLIs** like [Gemini CLI](https://github.com/google-gemini/gemini-cli), [Codex CLI](https://github.com/openai/codex), and [Claude Code](https://www.anthropic.com/claude-code) directly into your workflow
-- **CLI Subagents** - Launch isolated CLI instances from _within_ your current CLI! Claude Code can spawn Codex subagents, Codex can spawn Gemini CLI subagents, etc. Offload heavy tasks (code reviews, bug hunting) to fresh contexts while your main session's context window remains unpolluted. Each subagent returns only final results.
-- **Context Isolation** - Run separate investigations without polluting your primary workspace
-- **Role Specialization** - Spawn `planner`, `codereviewer`, or custom role agents with specialized system prompts
-- **Full CLI Capabilities** - Web search, file inspection, MCP tool access, latest documentation lookups
-- **Seamless Continuity** - Sub-CLIs participate as first-class members with full conversation context between tools
+- **เชื่อม CLI ภายนอก** เช่น Codex CLI, Antigravity (`agy`), Claude Code เข้ามาในงานได้เลย
+- **CLI Subagents** — เปิด CLI แยก isolated จาก _ภายใน_ CLI ปัจจุบัน! Claude Code เปิด subagent เป็น Codex ได้ Codex เปิด subagent เป็นตัวอื่นได้ โยนงานหนัก (code review, ล่าบั๊ก) ไปยัง context ใหม่ ให้ context หลักของคุณไม่รก — subagent คืนแค่ผลสุดท้าย
+- **Context Isolation** — สืบสวนแยกกันได้โดยไม่ปน workspace หลัก
+- **Role เฉพาะทาง** — เปิด agent ในบท `planner`, `codereviewer` หรือ role ที่คุณตั้งเอง พร้อม system prompt เฉพาะ
+- **ความสามารถ CLI เต็มรูปแบบ** — web search, อ่านไฟล์, ใช้ MCP tool, ค้นเอกสารล่าสุด
+- **ต่อเนื่องไร้รอยต่อ** — sub-CLI เป็นสมาชิกชั้นหนึ่งของบทสนทนา บริบทไหลข้ามเครื่องมือ
 
 ```bash
-# Codex spawns Codex subagent for isolated code review in fresh context
+# Codex เปิด subagent เป็น Codex เพื่อ review แยกใน context ใหม่
 clink with codex codereviewer to audit auth module for security issues
-# Subagent reviews in isolation, returns final report without cluttering your context as codex reads each file and walks the directory structure
 
-# Consensus from different AI models → Implementation handoff with full context preservation between tools
+# หาข้อสรุปจากหลายโมเดล → ส่งต่อให้ลงมือ โดยคงบริบทเต็มระหว่างเครื่องมือ
 Use consensus with gpt-5 and gemini-pro to decide: dark mode or offline support next
-Continue with clink gemini - implement the recommended feature
-# Gemini receives full debate context and starts coding immediately
+Continue with clink codex - implement the recommended feature
 ```
 
-👉 **[Learn more about clink](docs/tools/clink.md)**
+**เลือก model + reasoning ต่อ call ได้ (ของ fork นี้):**
+```
+clink codex model="gpt-5.6-sol"  reasoning_effort="max"   → งาน leaf ที่ยากสุด (ฉลาดสุด)
+clink codex model="gpt-5.6-luna" reasoning_effort="high"  → งานประหยัด quota
+clink antigravity model="Claude Opus 4.6 (Thinking)"      → ขอความเห็นนอกค่าย OpenAI
+```
+
+👉 **[เรียนรู้ clink เพิ่มเติม](docs/tools/clink.md)** · **[คู่มือ model/effort](docs/clink-model-effort-guide.md)**
 
 ---
 
-## Why PAL MCP?
+## ทำไมต้อง PAL MCP?
 
-**Why rely on one AI model when you can orchestrate them all?**
+**ในเมื่อคุณสั่งการทุกโมเดลพร้อมกันได้ ทำไมต้องพึ่งโมเดลเดียว?**
 
-A Model Context Protocol server that supercharges tools like [Claude Code](https://www.anthropic.com/claude-code), [Codex CLI](https://developers.openai.com/codex/cli), and IDE clients such
-as [Cursor](https://cursor.com) or the [Claude Dev VS Code extension](https://marketplace.visualstudio.com/items?itemName=Anthropic.claude-vscode). **PAL MCP connects your favorite AI tool
-to multiple AI models** for enhanced code analysis, problem-solving, and collaborative development.
+PAL เป็นเซิร์ฟเวอร์ Model Context Protocol ที่เสริมพลังเครื่องมืออย่าง [Claude Code](https://www.anthropic.com/claude-code), [Codex CLI](https://developers.openai.com/codex/cli) และ IDE เช่น [Cursor](https://cursor.com) — **เชื่อมเครื่องมือ AI ที่คุณชอบเข้ากับหลายโมเดล** เพื่อวิเคราะห์โค้ด แก้ปัญหา และพัฒนาแบบร่วมมือกันได้ลึกขึ้น
 
-### True AI Collaboration with Conversation Continuity
+### ร่วมมือกับ AI จริง ด้วยบริบทที่ต่อเนื่อง
 
-PAL supports **conversation threading** so your CLI can **discuss ideas with multiple AI models, exchange reasoning, get second opinions, and even run collaborative debates between models** to help you reach deeper insights and better solutions.
+PAL รองรับ **conversation threading** — CLI ของคุณจึงถกไอเดียกับหลายโมเดล แลกเหตุผล ขอ second opinion หรือจัดดีเบตระหว่างโมเดลได้ CLI ของคุณคุมทุกอย่าง แต่ได้มุมมองจาก AI ที่เหมาะกับแต่ละงานย่อย บริบทไหลต่อข้ามเครื่องมือ/โมเดล เปิดทางเวิร์กโฟลว์ซับซ้อน เช่น review หลายโมเดล → วางแผน → ลงมือ → ตรวจก่อน commit
 
-Your CLI always stays in control but gets perspectives from the best AI for each subtask. Context carries forward seamlessly across tools and models, enabling complex workflows like: code reviews with multiple models → automated planning → implementation → pre-commit validation.
-
-> **You're in control.** Your CLI of choice orchestrates the AI team, but you decide the workflow. Craft powerful prompts that bring in Gemini Pro, GPT 5, Flash, or local offline models exactly when needed.
+> **คุณคือคนคุม** — CLI ของคุณสั่งการทีม AI แต่คุณตัดสินใจเวิร์กโฟลว์เอง เขียนพรอมป์ตให้ดึง Gemini Pro, GPT-5, Flash หรือโมเดลบนเครื่องมาใช้ตอนที่ต้องการ
 
 <details>
-<summary><b>Reasons to Use PAL MCP</b></summary>
+<summary><b>เหตุผลที่ควรใช้ PAL MCP</b></summary>
 
-A typical workflow with Claude Code as an example:
+- **Multi-Model Orchestration** — ประสานหลายโมเดล (Gemini Pro, O3, GPT-5 และ 50+ โมเดล) เลือกตัวที่เหมาะกับแต่ละงาน
+- **Context Revival** — แม้ context ของ CLI หลักจะรีเซ็ต ก็ให้โมเดลอื่น "เตือนความจำ" เพื่อคุยต่อได้ไร้รอยต่อ
+- **Guided Workflows** — บังคับขั้นตอนสืบสวนอย่างเป็นระบบ กันการวิเคราะห์แบบรีบร้อน
+- **Extended Context** — ทะลุขีดจำกัดด้วยการโยนไปโมเดล context ใหญ่สำหรับ codebase ขนาดมหึมา
+- **Conversation Continuity** — บริบทเต็มไหลข้ามเครื่องมือและโมเดล
+- **จุดแข็งเฉพาะโมเดล** — thinking กับ Gemini Pro, ความเร็วกับ Flash, เหตุผลกับ O3, ความเป็นส่วนตัวกับ Ollama บนเครื่อง
+- **Code Review มืออาชีพ** — วิเคราะห์หลายรอบ พร้อมระดับความรุนแรงและ feedback ที่ลงมือได้
+- **Debug อัจฉริยะ** — หา root cause อย่างเป็นระบบ พร้อมติดตามสมมติฐาน + ระดับความมั่นใจ
+- **เลือกโมเดลอัตโนมัติ** — ระบบเลือกโมเดลที่เหมาะกับแต่ละงานย่อย (หรือคุณระบุเองก็ได้)
+- **Vision** — วิเคราะห์ภาพหน้าจอ ไดอะแกรม เนื้อหาภาพด้วยโมเดล vision
+- **โมเดลบนเครื่อง** — รัน Llama / Mistral ในเครื่องเพื่อความเป็นส่วนตัวและไม่มีค่า API
+- **ข้ามลิมิต token ของ MCP** — จัดการพรอมป์ต/คำตอบขนาดใหญ่เกิน 25K อัตโนมัติ
 
-1. **Multi-Model Orchestration** - Claude coordinates with Gemini Pro, O3, GPT-5, and 50+ other models to get the best analysis for each task
+**ฟีเจอร์เด็ด:** เมื่อ context ของ CLI หลักรีเซ็ต แค่สั่ง "continue with O3" — คำตอบของอีกโมเดลจะปลุกความเข้าใจกลับมาโดยไม่ต้องป้อนเอกสารซ้ำ
 
-2. **Context Revival Magic** - Even after Claude's context resets, continue conversations seamlessly by having other models "remind" Claude of the discussion
-
-3. **Guided Workflows** - Enforces systematic investigation phases that prevent rushed analysis and ensure thorough code examination
-
-4. **Extended Context Windows** - Break Claude's limits by delegating to Gemini (1M tokens) or O3 (200K tokens) for massive codebases
-
-5. **True Conversation Continuity** - Full context flows across tools and models - Gemini remembers what O3 said 10 steps ago
-
-6. **Model-Specific Strengths** - Extended thinking with Gemini Pro, blazing speed with Flash, strong reasoning with O3, privacy with local Ollama
-
-7. **Professional Code Reviews** - Multi-pass analysis with severity levels, actionable feedback, and consensus from multiple AI experts
-
-8. **Smart Debugging Assistant** - Systematic root cause analysis with hypothesis tracking and confidence levels
-
-9. **Automatic Model Selection** - Claude intelligently picks the right model for each subtask (or you can specify)
-
-10. **Vision Capabilities** - Analyze screenshots, diagrams, and visual content with vision-enabled models
-
-11. **Local Model Support** - Run Llama, Mistral, or other models locally for complete privacy and zero API costs
-
-12. **Bypass MCP Token Limits** - Automatically works around MCP's 25K limit for large prompts and responses
-
-**The Killer Feature:** When Claude's context resets, just ask to "continue with O3" - the other model's response magically revives Claude's understanding without re-ingesting documents!
-
-#### Example: Multi-Model Code Review Workflow
-
-1. `Perform a codereview using gemini pro and o3 and use planner to generate a detailed plan, implement the fixes and do a final precommit check by continuing from the previous codereview`
-2. This triggers a [`codereview`](docs/tools/codereview.md) workflow where Claude walks the code, looking for all kinds of issues
-3. After multiple passes, collects relevant code and makes note of issues along the way
-4. Maintains a `confidence` level between `exploring`, `low`, `medium`, `high` and `certain` to track how confidently it's been able to find and identify issues
-5. Generates a detailed list of critical -> low issues
-6. Shares the relevant files, findings, etc with **Gemini Pro** to perform a deep dive for a second [`codereview`](docs/tools/codereview.md)
-7. Comes back with a response and next does the same with o3, adding to the prompt if a new discovery comes to light
-8. When done, Claude takes in all the feedback and combines a single list of all critical -> low issues, including good patterns in your code. The final list includes new findings or revisions in case Claude misunderstood or missed something crucial and one of the other models pointed this out
-9. It then uses the [`planner`](docs/tools/planner.md) workflow to break the work down into simpler steps if a major refactor is required
-10. Claude then performs the actual work of fixing highlighted issues
-11. When done, Claude returns to Gemini Pro for a [`precommit`](docs/tools/precommit.md) review
-
-All within a single conversation thread! Gemini Pro in step 11 _knows_ what was recommended by O3 in step 7! Taking that context
-and review into consideration to aid with its final pre-commit review.
-
-**Think of it as Claude Code _for_ Claude Code.** This MCP isn't magic. It's just **super-glue**.
-
-> **Remember:** Claude stays in full control — but **YOU** call the shots.
-> PAL is designed to have Claude engage other models only when needed — and to follow through with meaningful back-and-forth.
-> **You're** the one who crafts the powerful prompt that makes Claude bring in Gemini, Flash, O3 — or fly solo.
-> You're the guide. The prompter. The puppeteer.
-> #### You are the AI - **Actually Intelligent**.
 </details>
 
-#### Recommended AI Stack
+#### AI Stack ที่แนะนำ
 
 <details>
-<summary>For Claude Code Users</summary>
+<summary>สำหรับผู้ใช้ Claude Code</summary>
 
-For best results when using [Claude Code](https://claude.ai/code):  
-
-- **Sonnet 4.5** - All agentic work and orchestration
-- **Gemini 3.0 Pro** OR **GPT-5.2 / Pro** - Deep thinking, additional code reviews, debugging and validations, pre-commit analysis
+- **Sonnet 4.5** — งาน agentic + orchestration ทั้งหมด
+- **Gemini 3.0 Pro** หรือ **GPT-5.2 / Pro** — คิดเชิงลึก, review เพิ่ม, debug/validate, ตรวจก่อน commit
 </details>
 
 <details>
-<summary>For Codex Users</summary>
+<summary>สำหรับผู้ใช้ Codex</summary>
 
-For best results when using [Codex CLI](https://developers.openai.com/codex/cli):  
-
-- **GPT-5.2 Codex Medium** - All agentic work and orchestration
-- **Gemini 3.0 Pro** OR **GPT-5.2-Pro** - Deep thinking, additional code reviews, debugging and validations, pre-commit analysis
+- **GPT-5.2 Codex Medium** — งาน agentic + orchestration ทั้งหมด
+- **Gemini 3.0 Pro** หรือ **GPT-5.2-Pro** — คิดเชิงลึก, review เพิ่ม, debug/validate, ตรวจก่อน commit
 </details>
 
-## Quick Start (5 minutes)
+## เริ่มใช้งาน (5 นาที)
 
-**Prerequisites:** Python 3.10+, Git, [uv installed](https://docs.astral.sh/uv/getting-started/installation/)
+**ต้องมีก่อน:** Python 3.10+, Git, [ติดตั้ง uv](https://docs.astral.sh/uv/getting-started/installation/)
 
-**1. Get API Keys** (choose one or more):
-- **[OpenRouter](https://openrouter.ai/)** - Access multiple models with one API
-- **[Gemini](https://makersuite.google.com/app/apikey)** - Google's latest models
-- **[OpenAI](https://platform.openai.com/api-keys)** - O3, GPT-5 series
-- **[Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/)** - Enterprise deployments of GPT-4o, GPT-4.1, GPT-5 family
-- **[X.AI](https://console.x.ai/)** - Grok models
-- **[DIAL](https://dialx.ai/)** - Vendor-agnostic model access
-- **[Ollama](https://ollama.ai/)** - Local models (free)
+**1. เตรียม API Key** (เลือกอย่างน้อยหนึ่ง): [OpenRouter](https://openrouter.ai/) · [Gemini](https://makersuite.google.com/app/apikey) · [OpenAI](https://platform.openai.com/api-keys) · [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/) · [X.AI](https://console.x.ai/) · [DIAL](https://dialx.ai/) · [Ollama](https://ollama.ai/) (ฟรี บนเครื่อง)
 
-**2. Install** (choose one):
+**2. ติดตั้ง** (เลือกอย่างใดอย่างหนึ่ง):
 
-**Option A: Clone and Automatic Setup** (recommended)
+**ตัวเลือก A: clone + ตั้งค่าอัตโนมัติ** (แนะนำ)
 ```bash
-git clone https://github.com/BeehiveInnovations/pal-mcp-server.git
+# fork นี้ (เพิ่ม antigravity / claude-9arm / model+effort ต่อ call)
+git clone https://github.com/xenodeve/pal-mcp-server.git
 cd pal-mcp-server
 
-# Handles everything: setup, config, API keys from system environment. 
-# Auto-configures Claude Desktop, Claude Code, Gemini CLI, Codex CLI, Qwen CLI
-# Enable / disable additional settings in .env
-./run-server.sh  
+# จัดการให้หมด: setup, config, API key จาก environment
+# ตั้งค่าให้ Claude Desktop, Claude Code, Codex CLI, Qwen CLI อัตโนมัติ (Gemini CLI ปลดระวางแล้ว → ใช้ Antigravity)
+./run-server.sh
 ```
 
-**Option B: Instant Setup with [uvx](https://docs.astral.sh/uv/getting-started/installation/)**
+**ตัวเลือก B: ติดตั้งทันทีด้วย [uvx](https://docs.astral.sh/uv/getting-started/installation/)**
 ```json
-// Add to ~/.claude/settings.json or .mcp.json
-// Don't forget to add your API keys under env
+// เพิ่มใน ~/.claude/settings.json หรือ .mcp.json — อย่าลืมใส่ API key ใต้ env
 {
   "mcpServers": {
     "pal": {
       "command": "bash",
-      "args": ["-c", "for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \"$p\" ] && exec \"$p\" --from git+https://github.com/BeehiveInnovations/pal-mcp-server.git pal-mcp-server; done; echo 'uvx not found' >&2; exit 1"],
+      "args": ["-c", "for p in $(which uvx 2>/dev/null) $HOME/.local/bin/uvx /opt/homebrew/bin/uvx /usr/local/bin/uvx uvx; do [ -x \"$p\" ] && exec \"$p\" --from git+https://github.com/xenodeve/pal-mcp-server.git pal-mcp-server; done; echo 'uvx not found' >&2; exit 1"],
       "env": {
         "PATH": "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:~/.local/bin",
         "GEMINI_API_KEY": "your-key-here",
@@ -188,265 +147,96 @@ cd pal-mcp-server
 }
 ```
 
-**3. Start Using!**
+**3. เริ่มใช้!**
 ```
-"Use pal to analyze this code for security issues with gemini pro"
-"Debug this error with o3 and then get flash to suggest optimizations"
-"Plan the migration strategy with pal, get consensus from multiple models"
-"clink with cli_name=\"gemini\" role=\"planner\" to draft a phased rollout plan"
+"ใช้ pal วิเคราะห์โค้ดนี้หาช่องโหว่ความปลอดภัยด้วย gemini pro"
+"debug error นี้ด้วย o3 แล้วให้ flash แนะนำการ optimize"
+"clink with cli_name=\"antigravity\" role=\"planner\" ช่วยร่างแผน rollout แบบเป็นเฟส"
 ```
 
-👉 **[Complete Setup Guide](docs/getting-started.md)** with detailed installation, configuration for Gemini / Codex / Qwen, and troubleshooting
-👉 **[Cursor & VS Code Setup](docs/getting-started.md#ide-clients)** for IDE integration instructions
-📺 **[Watch tools in action](#-watch-tools-in-action)** to see real-world examples
+👉 **[คู่มือ setup ฉบับเต็ม](docs/getting-started.md)** · 👉 **[ตั้งค่า Cursor & VS Code](docs/getting-started.md#ide-clients)** · 📺 **[ดูตัวอย่างจริง](#-ดูเครื่องมือทำงานจริง)**
 
-## Provider Configuration
+## Core Tools (เครื่องมือหลัก)
 
-PAL activates any provider that has credentials in your `.env`. See `.env.example` for deeper customization.
+> **หมายเหตุ:** แต่ละ tool มีเวิร์กโฟลว์/พารามิเตอร์/คำอธิบายของตัวเองที่กิน context แม้ไม่ได้ใช้ บางตัวจึงปิดไว้โดยดีฟอลต์ ดู [Tool Configuration](#tool-configuration)
 
-## Core Tools
+**การร่วมมือ & วางแผน** *(เปิดโดยดีฟอลต์)*
+- **[`clink`](docs/tools/clink.md)** — สะพานส่งงานไป AI CLI ภายนอก (planner, codereviewer ฯลฯ)
+- **[`chat`](docs/tools/chat.md)** — ระดมสมอง, ขอ second opinion, ตรวจแนวทาง
+- **[`thinkdeep`](docs/tools/thinkdeep.md)** — คิดเชิงลึก, วิเคราะห์ edge case, มุมมองทางเลือก
+- **[`planner`](docs/tools/planner.md)** — แตกงานซับซ้อนเป็นแผนที่ลงมือได้
+- **[`consensus`](docs/tools/consensus.md)** — ขอความเห็นผู้เชี่ยวชาญจากหลายโมเดล พร้อมกำหนดจุดยืน
 
-> **Note:** Each tool comes with its own multi-step workflow, parameters, and descriptions that consume valuable context window space even when not in use. To optimize performance, some tools are disabled by default. See [Tool Configuration](#tool-configuration) below to enable them.
+**วิเคราะห์ & คุณภาพโค้ด**
+- **[`debug`](docs/tools/debug.md)** — สืบสวนหา root cause อย่างเป็นระบบ
+- **[`precommit`](docs/tools/precommit.md)** — ตรวจการเปลี่ยนแปลงก่อน commit กัน regression
+- **[`codereview`](docs/tools/codereview.md)** — review มืออาชีพพร้อมระดับความรุนแรง
+- **[`analyze`](docs/tools/analyze.md)** *(ปิดโดยดีฟอลต์)* — เข้าใจสถาปัตยกรรม/รูปแบบ/dependency ทั้ง codebase
 
-**Collaboration & Planning** *(Enabled by default)*
-- **[`clink`](docs/tools/clink.md)** - Bridge requests to external AI CLIs (Gemini planner, codereviewer, etc.)
-- **[`chat`](docs/tools/chat.md)** - Brainstorm ideas, get second opinions, validate approaches. With capable models (GPT-5.2 Pro, Gemini 3.0 Pro), generates complete code / implementation
-- **[`thinkdeep`](docs/tools/thinkdeep.md)** - Extended reasoning, edge case analysis, alternative perspectives
-- **[`planner`](docs/tools/planner.md)** - Break down complex projects into structured, actionable plans
-- **[`consensus`](docs/tools/consensus.md)** - Get expert opinions from multiple AI models with stance steering
+**เครื่องมือพัฒนา** *(ปิดโดยดีฟอลต์)*
+- **[`refactor`](docs/tools/refactor.md)** · **[`testgen`](docs/tools/testgen.md)** · **[`secaudit`](docs/tools/secaudit.md)** · **[`docgen`](docs/tools/docgen.md)**
 
-**Code Analysis & Quality**
-- **[`debug`](docs/tools/debug.md)** - Systematic investigation and root cause analysis
-- **[`precommit`](docs/tools/precommit.md)** - Validate changes before committing, prevent regressions
-- **[`codereview`](docs/tools/codereview.md)** - Professional reviews with severity levels and actionable feedback
-- **[`analyze`](docs/tools/analyze.md)** *(disabled by default - [enable](#tool-configuration))* - Understand architecture, patterns, dependencies across entire codebases
-
-**Development Tools** *(Disabled by default - [enable](#tool-configuration))*
-- **[`refactor`](docs/tools/refactor.md)** - Intelligent code refactoring with decomposition focus
-- **[`testgen`](docs/tools/testgen.md)** - Comprehensive test generation with edge cases
-- **[`secaudit`](docs/tools/secaudit.md)** - Security audits with OWASP Top 10 analysis
-- **[`docgen`](docs/tools/docgen.md)** - Generate documentation with complexity analysis
-
-**Utilities**
-- **[`apilookup`](docs/tools/apilookup.md)** - Forces current-year API/SDK documentation lookups in a sub-process (saves tokens within the current context window), prevents outdated training data responses
-- **[`challenge`](docs/tools/challenge.md)** - Prevent "You're absolutely right!" responses with critical analysis
-- **[`tracer`](docs/tools/tracer.md)** *(disabled by default - [enable](#tool-configuration))* - Static analysis prompts for call-flow mapping
+**ยูทิลิตี้**
+- **[`apilookup`](docs/tools/apilookup.md)** — บังคับค้นเอกสาร API/SDK ปีปัจจุบันใน sub-process กันคำตอบจากข้อมูลเก่า
+- **[`challenge`](docs/tools/challenge.md)** — กันคำตอบ "You're absolutely right!" ด้วยการวิเคราะห์เชิงวิพากษ์
+- **[`tracer`](docs/tools/tracer.md)** *(ปิดโดยดีฟอลต์)* — วิเคราะห์ call-flow แบบ static
 
 <details>
 <summary><b id="tool-configuration">👉 Tool Configuration</b></summary>
 
-### Default Configuration
+เปิดโดยดีฟอลต์: `chat`, `thinkdeep`, `planner`, `consensus`, `codereview`, `precommit`, `debug`, `apilookup`, `challenge`
+ปิดโดยดีฟอลต์: `analyze`, `refactor`, `testgen`, `secaudit`, `docgen`, `tracer`
 
-To optimize context window usage, only essential tools are enabled by default:
-
-**Enabled by default:**
-- `chat`, `thinkdeep`, `planner`, `consensus` - Core collaboration tools
-- `codereview`, `precommit`, `debug` - Essential code quality tools
-- `apilookup` - Rapid API/SDK information lookup
-- `challenge` - Critical thinking utility
-
-**Disabled by default:**
-- `analyze`, `refactor`, `testgen`, `secaudit`, `docgen`, `tracer`
-
-### Enabling Additional Tools
-
-To enable additional tools, remove them from the `DISABLED_TOOLS` list:
-
-**Option 1: Edit your .env file**
+เปิดเพิ่มโดยลบชื่อออกจาก `DISABLED_TOOLS` ใน `.env` หรือ MCP settings:
 ```bash
-# Default configuration (from .env.example)
+# ดีฟอลต์
 DISABLED_TOOLS=analyze,refactor,testgen,secaudit,docgen,tracer
-
-# To enable specific tools, remove them from the list
-# Example: Enable analyze tool
-DISABLED_TOOLS=refactor,testgen,secaudit,docgen,tracer
-
-# To enable ALL tools
+# เปิดทั้งหมด
 DISABLED_TOOLS=
 ```
-
-**Option 2: Configure in MCP settings**
-```json
-// In ~/.claude/settings.json or .mcp.json
-{
-  "mcpServers": {
-    "pal": {
-      "env": {
-        // Tool configuration
-        "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
-        "DEFAULT_MODEL": "pro",
-        "DEFAULT_THINKING_MODE_THINKDEEP": "high",
-        
-        // API configuration
-        "GEMINI_API_KEY": "your-gemini-key",
-        "OPENAI_API_KEY": "your-openai-key",
-        "OPENROUTER_API_KEY": "your-openrouter-key",
-        
-        // Logging and performance
-        "LOG_LEVEL": "INFO",
-        "CONVERSATION_TIMEOUT_HOURS": "6",
-        "MAX_CONVERSATION_TURNS": "50"
-      }
-    }
-  }
-}
-```
-
-**Option 3: Enable all tools**
-```json
-// Remove or empty the DISABLED_TOOLS to enable everything
-{
-  "mcpServers": {
-    "pal": {
-      "env": {
-        "DISABLED_TOOLS": ""
-      }
-    }
-  }
-}
-```
-
-**Note:**
-- Essential tools (`version`, `listmodels`) cannot be disabled
-- After changing tool configuration, restart your Claude session for changes to take effect
-- Each tool adds to context window usage, so only enable what you need
+หมายเหตุ: `version`, `listmodels` ปิดไม่ได้ · เปลี่ยนแล้ว restart session · แต่ละ tool กิน context ให้เปิดเท่าที่ใช้
 
 </details>
 
-## 📺 Watch Tools In Action
+## 📺 ดูเครื่องมือทำงานจริง
 
 <details>
-<summary><b>Chat Tool</b> - Collaborative decision making and multi-turn conversations</summary>
-
-**Picking Redis vs Memcached:**
+<summary><b>Chat Tool</b> — ตัดสินใจร่วมกัน + คุยหลายรอบ</summary>
 
 [Chat Redis or Memcached_web.webm](https://github.com/user-attachments/assets/41076cfe-dd49-4dfc-82f5-d7461b34705d)
-
-**Multi-turn conversation with continuation:**
-
 [Chat With Gemini_web.webm](https://github.com/user-attachments/assets/37bd57ca-e8a6-42f7-b5fb-11de271e95db)
-
 </details>
 
 <details>
-<summary><b>Consensus Tool</b> - Multi-model debate and decision making</summary>
-
-**Multi-model consensus debate:**
+<summary><b>Consensus Tool</b> — ดีเบตหลายโมเดล</summary>
 
 [PAL Consensus Debate](https://github.com/user-attachments/assets/76a23dd5-887a-4382-9cf0-642f5cf6219e)
-
 </details>
 
 <details>
-<summary><b>PreCommit Tool</b> - Comprehensive change validation</summary>
+<summary><b>PreCommit Tool</b> — ตรวจการเปลี่ยนแปลงครบถ้วน</summary>
 
-**Pre-commit validation workflow:**
-
-<div align="center">
-  <img src="https://github.com/user-attachments/assets/584adfa6-d252-49b4-b5b0-0cd6e97fb2c6" width="950">
-</div>
-
+<div align="center"><img src="https://github.com/user-attachments/assets/584adfa6-d252-49b4-b5b0-0cd6e97fb2c6" width="950"></div>
 </details>
 
-<details>
-<summary><b>API Lookup Tool</b> - Current vs outdated API documentation</summary>
+## คุณสมบัติเด่น
 
-**Without PAL - outdated APIs:**
-
-[API without PAL](https://github.com/user-attachments/assets/01a79dc9-ad16-4264-9ce1-76a56c3580ee)
-
-**With PAL - current APIs:**
-
-[API with PAL](https://github.com/user-attachments/assets/5c847326-4b66-41f7-8f30-f380453dce22)
-
-</details>
-
-<details>
-<summary><b>Challenge Tool</b> - Critical thinking vs reflexive agreement</summary>
-
-**Without PAL:**
-
-![without_pal@2x](https://github.com/user-attachments/assets/64f3c9fb-7ca9-4876-b687-25e847edfd87)
-
-**With PAL:**
-
-![with_pal@2x](https://github.com/user-attachments/assets/9d72f444-ba53-4ab1-83e5-250062c6ee70)
-
-</details>
-
-## Key Features
-
-**AI Orchestration**
-- **Auto model selection** - Claude picks the right AI for each task
-- **Multi-model workflows** - Chain different models in single conversations
-- **Conversation continuity** - Context preserved across tools and models
-- **[Context revival](docs/context-revival.md)** - Continue conversations even after context resets
-
-**Model Support**
-- **Multiple providers** - Gemini, OpenAI, Azure, X.AI, OpenRouter, DIAL, Ollama
-- **Latest models** - GPT-5, Gemini 3.0 Pro, O3, Grok-4, local Llama
-- **[Thinking modes](docs/advanced-usage.md#thinking-modes)** - Control reasoning depth vs cost
-- **Vision support** - Analyze images, diagrams, screenshots
-
-**Developer Experience**
-- **Guided workflows** - Systematic investigation prevents rushed analysis
-- **Smart file handling** - Auto-expand directories, manage token limits
-- **Web search integration** - Access current documentation and best practices
-- **[Large prompt support](docs/advanced-usage.md#working-with-large-prompts)** - Bypass MCP's 25K token limit
-
-## Example Workflows
-
-**Multi-model Code Review:**
-```
-"Perform a codereview using gemini pro and o3, then use planner to create a fix strategy"
-```
-→ Claude reviews code systematically → Consults Gemini Pro → Gets O3's perspective → Creates unified action plan
-
-**Collaborative Debugging:**
-```
-"Debug this race condition with max thinking mode, then validate the fix with precommit"
-```
-→ Deep investigation → Expert analysis → Solution implementation → Pre-commit validation
-
-**Architecture Planning:**
-```
-"Plan our microservices migration, get consensus from pro and o3 on the approach"
-```
-→ Structured planning → Multiple expert opinions → Consensus building → Implementation roadmap
-
-👉 **[Advanced Usage Guide](docs/advanced-usage.md)** for complex workflows, model configuration, and power-user features
+**AI Orchestration** — เลือกโมเดลอัตโนมัติ · เวิร์กโฟลว์หลายโมเดล · บริบทต่อเนื่อง · [Context revival](docs/context-revival.md)
+**รองรับโมเดล** — หลายผู้ให้บริการ (Gemini, OpenAI, Azure, X.AI, OpenRouter, DIAL, Ollama) · โมเดลล่าสุด · [Thinking modes](docs/advanced-usage.md#thinking-modes) · Vision
+**ประสบการณ์นักพัฒนา** — เวิร์กโฟลว์แบบมีไกด์ · จัดการไฟล์อัจฉริยะ · web search · [รองรับพรอมป์ตใหญ่](docs/advanced-usage.md#working-with-large-prompts)
 
 ## Quick Links
 
-**📖 Documentation**
-- [Docs Overview](docs/index.md) - High-level map of major guides
-- [Getting Started](docs/getting-started.md) - Complete setup guide
-- [Tools Reference](docs/tools/) - All tools with examples
-- [Advanced Usage](docs/advanced-usage.md) - Power user features
-- [Configuration](docs/configuration.md) - Environment variables, restrictions
-- [Adding Providers](docs/adding_providers.md) - Provider-specific setup (OpenAI, Azure, custom gateways)
-- [Model Ranking Guide](docs/model_ranking.md) - How intelligence scores drive auto-mode suggestions
-
-**🔧 Setup & Support**
-- [WSL Setup](docs/wsl-setup.md) - Windows users
-- [Troubleshooting](docs/troubleshooting.md) - Common issues
-- [Contributing](docs/contributions.md) - Code standards, PR process
+**📖 เอกสาร:** [ภาพรวม](docs/index.md) · [Getting Started](docs/getting-started.md) · [Tools](docs/tools/) · [Advanced Usage](docs/advanced-usage.md) · [Configuration](docs/configuration.md) · [Adding Providers](docs/adding_providers.md) · [Model Ranking](docs/model_ranking.md)
+**🔧 Fork:** [CHANGES-FORK.md](CHANGES-FORK.md) · [คู่มือ clink model/effort](docs/clink-model-effort-guide.md)
+**🛠 Setup:** [WSL](docs/wsl-setup.md) · [Troubleshooting](docs/troubleshooting.md) · [Contributing](docs/contributions.md)
 
 ## License
 
-Apache 2.0 License - see [LICENSE](LICENSE) file for details.
+Apache 2.0 — ดู [LICENSE](LICENSE)
 
-## Acknowledgments
+## กิตติกรรมประกาศ
 
-Built with the power of **Multi-Model AI** collaboration 🤝
-- **A**ctual **I**ntelligence by real Humans
-- [MCP (Model Context Protocol)](https://modelcontextprotocol.com)
-- [Codex CLI](https://developers.openai.com/codex/cli)
-- [Claude Code](https://claude.ai/code)
-- [Gemini](https://ai.google.dev/)
-- [OpenAI](https://openai.com/)
-- [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/)
+สร้างด้วยพลัง **Multi-Model AI** 🤝 — [MCP](https://modelcontextprotocol.com) · [Codex CLI](https://developers.openai.com/codex/cli) · [Claude Code](https://claude.ai/code) · [Gemini](https://ai.google.dev/) · [OpenAI](https://openai.com/) · [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/)
 
-### Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=BeehiveInnovations/pal-mcp-server&type=Date)](https://www.star-history.com/#BeehiveInnovations/pal-mcp-server&Date)
+fork ดูแลโดย [xenodeve](https://github.com/xenodeve) — ต้นทาง [BeehiveInnovations/pal-mcp-server](https://github.com/BeehiveInnovations/pal-mcp-server)

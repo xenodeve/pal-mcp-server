@@ -35,9 +35,16 @@ class AntigravityAgent(BaseCLIAgent):
         system_prompt: str | None = None,
         files: Sequence[str],
         images: Sequence[str],
+        model: str | None = None,
+        reasoning_effort: str | None = None,
     ) -> AgentOutput:
         _ = (files, images, system_prompt)  # already embedded into the prompt by the tool
-        command = self._build_command(role=role, system_prompt=system_prompt)
+        command = self._build_command(
+            role=role,
+            system_prompt=system_prompt,
+            model=model,
+            reasoning_effort=reasoning_effort,
+        )
 
         resolved = shutil.which(command[0])
         if resolved is None:

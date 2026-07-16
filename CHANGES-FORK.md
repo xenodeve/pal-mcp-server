@@ -1,6 +1,6 @@
 # Fork changes
 
-This is a fork of [BeehiveInnovations/pal-mcp-server](https://github.com/BeehiveInnovations/pal-mcp-server) (Apache-2.0). Everything from upstream is unchanged except for two additive `clink` agents described below — no existing CLI (`gemini`, `claude`, `codex`) behavior was touched.
+This is a fork of [BeehiveInnovations/pal-mcp-server](https://github.com/BeehiveInnovations/pal-mcp-server) (Apache-2.0), which has been **unmaintained since ~mid-2026**. Everything from upstream is unchanged except for the additive `clink` changes described below: two new agents (`antigravity`, `claude-9arm`) plus an optional **per-call `model` / `reasoning_effort` override**. Existing CLI (`gemini`, `claude`, `codex`) behavior is unchanged whenever the new params are omitted — they default to off.
 
 ## What was added
 
@@ -30,6 +30,24 @@ To activate:
 2. Replace `command` with the absolute path to your `claude`/`claude.exe`
 3. Replace the `--settings`/`--model` placeholders with your gateway's settings file path and model ID
 4. Restart the MCP server (config is cached at process start, not read per-call)
+
+### Per-call `model` + `reasoning_effort` override
+
+Upstream `clink` fixes each CLI's model and reasoning at **config time** (`conf/cli_clients/*.json` args) — to vary them you had to edit the JSON and restart the server, or define a separate client per variant. This fork adds two **optional** clink tool params so a caller can choose the model + effort **per call**:
+
+- `model` — overrides the model for this call. Mapped per CLI: **Codex** → `-m <model>`; everyone else (`claude` / `gemini` / `antigravity`) → `--model <model>`.
+- `reasoning_effort` — **Codex only** (`low` | `medium` | `high` | `xhigh` | `max`), mapped to `-c model_reasoning_effort=<effort>`. Ignored by CLIs that bake effort into the model *name* (e.g. Antigravity's `"Gemini 3.5 Flash (High)"`, selected via `model`).
+
+Both are optional and append **after** the config/role args, so a per-call value wins over any config default; omitting them reproduces the previous command byte-for-byte (backward-compatible). Implemented via a small `_model_args()` hook on the base agent that `CodexAgent` overrides.
+
+Unlike the two agents above, this change **does** touch shared files — `clink/agents/{base,claude,codex,antigravity}.py` and `tools/clink.py` — but only additively (new optional kwargs + a schema field). New files: `tests/test_clink_model_effort.py` (asserts the per-CLI flag mapping + backward-compat).
+
+Examples:
+```
+clink(cli_name="codex", model="gpt-5.6-sol",  reasoning_effort="max",  prompt="…")  # hardest leaf
+clink(cli_name="codex", model="gpt-5.6-luna", reasoning_effort="high", prompt="…")  # cheap / quota-thrifty
+clink(cli_name="antigravity", model="Claude Opus 4.6 (Thinking)",      prompt="…")  # non-OpenAI check
+```
 
 ## Known gotchas carried over from development
 

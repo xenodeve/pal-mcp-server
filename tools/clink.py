@@ -50,6 +50,20 @@ class CLinkRequest(BaseModel):
         default=None,
         description=COMMON_FIELD_DESCRIPTIONS["continuation_id"],
     )
+    model: str | None = Field(
+        default=None,
+        description=(
+            "Override the model for this call (codex: -m; others: --model). "
+            "Omit to use the CLI's configured default."
+        ),
+    )
+    reasoning_effort: str | None = Field(
+        default=None,
+        description=(
+            "Codex reasoning effort (low|medium|high|xhigh|max). Ignored by CLIs that "
+            "bake effort into the model name (e.g. antigravity)."
+        ),
+    )
 
 
 class CLinkTool(SimpleTool):
@@ -143,6 +157,21 @@ class CLinkTool(SimpleTool):
             "absolute_file_paths": SchemaBuilder.SIMPLE_FIELD_SCHEMAS["absolute_file_paths"],
             "images": SchemaBuilder.COMMON_FIELD_SCHEMAS["images"],
             "continuation_id": SchemaBuilder.COMMON_FIELD_SCHEMAS["continuation_id"],
+            "model": {
+                "type": "string",
+                "description": (
+                    "Override the model for this call (codex: -m; others: --model). "
+                    "Omit to use the CLI's configured default."
+                ),
+            },
+            "reasoning_effort": {
+                "type": "string",
+                "enum": ["low", "medium", "high", "xhigh", "max"],
+                "description": (
+                    "Codex reasoning effort. Ignored by CLIs that bake effort into the "
+                    "model name (e.g. antigravity)."
+                ),
+            },
         }
 
         schema = {
@@ -211,6 +240,8 @@ class CLinkTool(SimpleTool):
                 system_prompt=system_prompt_text if system_prompt_text.strip() else None,
                 files=absolute_file_paths,
                 images=images,
+                model=request.model,
+                reasoning_effort=request.reasoning_effort,
             )
         except CLIAgentError as exc:
             metadata = self._build_error_metadata(client_config, exc)

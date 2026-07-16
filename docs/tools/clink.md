@@ -78,11 +78,13 @@ You can make your own custom roles in `conf/cli_clients/` or tweak any of the sh
 ## Tool Parameters
 
 - `prompt`: Your question or task for the external CLI (required)
-- `cli_name`: Which CLI to use - `gemini` (default), `claude`, `codex`, `antigravity` (fork addition, see below), or add your own in `conf/cli_clients/`
+- `cli_name`: Which CLI to use - `gemini` (default), `claude`, `codex`, `antigravity` (fork addition, see below), or add your own in `conf/cli_clients/`. **Note:** the standalone Gemini CLI was retired by Google in mid-2026; its successor is `antigravity` (`agy`) — prefer that for Google models.
 - `role`: Preset role - `default`, `planner`, `codereviewer` (default: `default`)
 - `files`: Optional file paths for context (references only, CLI opens files itself)
 - `images`: Optional image paths for visual context
 - `continuation_id`: Continue previous clink conversations
+- `model` *(fork addition)*: Override the model for this call — Codex `-m <model>`, others `--model <model>`. Omit to use the CLI's configured default.
+- `reasoning_effort` *(fork addition)*: Codex reasoning effort (`low`|`medium`|`high`|`xhigh`|`max`) → `-c model_reasoning_effort=`. Ignored by CLIs that bake effort into the model name (e.g. antigravity). See [CHANGES-FORK.md](../../CHANGES-FORK.md).
 
 ## Usage Examples
 
@@ -112,10 +114,18 @@ clink to gemini codereviewer: Review payment_service.py for race conditions and 
 then codereview to verify the implementation"
 ```
 
-**Leveraging Gemini's Web Search:**
+**Leveraging Antigravity's Web Search:**
 ```
-"Clink gemini to research current best practices for Kubernetes autoscaling in 2025"
+"Clink antigravity to research current best practices for Kubernetes autoscaling in 2026"
 ```
+
+**Choosing model + reasoning per call (fork addition):**
+```
+clink codex model="gpt-5.6-sol"  reasoning_effort="max"   → hardest leaf (top intelligence)
+clink codex model="gpt-5.6-luna" reasoning_effort="high"  → cheap / quota-thrifty leaf
+clink antigravity model="Claude Opus 4.6 (Thinking)"      → a non-OpenAI second opinion
+```
+Omit both to use whatever the CLI's config pins by default. Effort has steep diminishing returns — `medium`/`high` is usually the sweet spot; reserve `max`/`xhigh` for the genuinely hardest task.
 
 ## How Clink Works
 
@@ -128,7 +138,7 @@ then codereview to verify the implementation"
 
 ## Best Practices
 
-- **Pre-authenticate CLIs**: Install and configure Gemini CLI first (`npm install -g @google/gemini-cli`)
+- **Pre-authenticate CLIs**: Install and log in to each CLI you'll clink to first — Codex, Claude Code, and/or Antigravity (`agy`, the retired Gemini CLI's successor; see [CHANGES-FORK.md](../../CHANGES-FORK.md))
 - **Choose appropriate roles**: Use `planner` for strategy, `codereviewer` for code, `default` for general questions
 - **Leverage CLI strengths**: Gemini's 1M context for large codebases, web search for current docs
 - **Combine with PAL tools**: Chain `clink` with `planner`, `codereview`, `debug` for powerful workflows
@@ -164,8 +174,9 @@ Each preset points to role-specific prompts in `systemprompts/clink/`. Duplicate
 Ensure the relevant CLI is installed and configured:
 
 - [Claude Code](https://www.anthropic.com/claude-code)
-- [Gemini CLI](https://github.com/google-gemini/gemini-cli)
-- [Codex CLI](https://docs.sourcegraph.com/codex)
+- **Codex CLI** (OpenAI) — `codex`
+- **Antigravity CLI** (`agy`) — the Gemini CLI's mid-2026 successor: `irm https://antigravity.google/cli/install.ps1 | iex` (Windows needs ConPTY — see [CHANGES-FORK.md](../../CHANGES-FORK.md))
+- ~~[Gemini CLI](https://github.com/google-gemini/gemini-cli)~~ — **retired by Google mid-2026**; use Antigravity instead
 
 ## Related Guides
 
