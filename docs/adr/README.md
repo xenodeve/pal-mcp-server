@@ -9,15 +9,12 @@ platform dependency, a security boundary. A reversible implementation detail doe
 
 ## Index
 
-_(none yet — add `0001-<slug>.md` as decisions are made)_
+| ADR | Decision | Status |
+|---|---|---|
+| [0001](0001-antigravity-via-windows-conpty.md) | Drive Antigravity (`agy`) through a Windows ConPTY | Accepted |
+| [0002](0002-per-call-model-effort-per-backend.md) | Per-call `model`/`reasoning_effort` as an optional, per-backend-mapped clink override | Accepted |
+| [0003](0003-zero-setup-discovery-and-active-claude-9arm.md) | Zero-setup CLI discovery + ship `claude-9arm` active, with a `~/.pal` override | Accepted |
 
-Candidate decisions from this fork's history (record if/when they're revisited):
-
-- Antigravity via a Windows **ConPTY** (`clink/agents/antigravity.py`) rather than a plain pipe —
-  see `CHANGES-FORK.md` for the rationale.
-- Per-call `model`/`reasoning_effort` mapped **per back-end** via a `_model_args()` hook, appended
-  after config args (backward-compatible) rather than a shared flag.
-- Antigravity model options placed **before** the value-taking `--print` + **fail-closed** on a
-  non-zero exit — see `docs/reports/2026-07-16-clink-antigravity-model-override-investigation.md`.
-- **Zero-setup executable discovery** + shipping `claude-9arm` active, with `~/.pal/cli_clients/`
-  as the override escape hatch.
+The Antigravity `--print`/`--model` ordering bug is a **fix**, recorded as a post-mortem
+(`docs/reports/2026-07-16-clink-antigravity-model-override-investigation.md`, RESOLVED section), not
+an ADR; ADR 0002 references the fail-closed behavior it introduced.
