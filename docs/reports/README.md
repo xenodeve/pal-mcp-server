@@ -7,6 +7,8 @@ and commit SHAs welcome. One dated file per topic.
 
 - [2026-07-16 — clink Antigravity model-override investigation](2026-07-16-clink-antigravity-model-override-investigation.md)
   — root cause + RESOLVED: `agy --print` swallowed `--model`; fixed by ordering + fail-closed (issue #2, `7e80e42`). This is a bug in *this fork's* clink code, so it lives here (referenced by [ADR 0002](../adr/0002-per-call-model-effort-per-backend.md)).
+- [2026-07-16 — clink architecture & hardening review](2026-07-16-pal-clink-architecture-hardening-review.md)
+  — independent (codex) review of the antigravity / model-selection / discovery / claude-9arm work at `d44ae01`: 7.5/10, model-routing fix sound; hardening follow-ups (readOnlyHint, isolation, PTY timeout, failure-path tests) tracked in `docs/OPEN-WORK-LEDGER.md`.
 
 _(Delegation-**routing** research — the subagent delegation log, token-economics, and model×effort
 capability matrix — lives with the skills that it calibrated, in

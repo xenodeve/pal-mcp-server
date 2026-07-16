@@ -10,6 +10,24 @@ protocol in `docs/agents/` and the entry map (`using-t4`).
 
 ## Active
 
+### Hardening follow-ups (from the 2026-07-16 architecture review, 7.5/10)
+
+Source: `docs/reports/2026-07-16-pal-clink-architecture-hardening-review.md`. The model-routing fix
+is sound; these are safety/reliability items for unattended, repo-mutating delegation.
+
+- 🔴 **`readOnlyHint` is inaccurate.** `CLinkTool.get_annotations()` returns `readOnlyHint: True`
+  (`tools/clink.py`), but clink launches agents with bypass-approvals/sandbox flags that mutate the
+  repo. Fix the annotation to match agentic behavior.
+- 🔴 **Workspace/session isolation** — delegated agents run against the live working dir; add
+  isolation (a scratch/worktree or explicit cwd) before trusting unattended repo-mutating runs.
+- 🔴 **PTY timeout may not interrupt a blocking read** (`clink/agents/antigravity.py` `_run_in_pty`) —
+  the timeout check sits between reads; a read that blocks past the deadline isn't interrupted. Harden
+  the teardown.
+- 🔴 **Test coverage of failure paths** — good command-construction tests exist; the non-zero-exit /
+  timeout / parse-error paths (esp. the Antigravity runner) are uncovered.
+
+### Other
+
 - 🔴 **Cross-platform CLI discovery** — `clink/discovery.py` known-install-locations are
   Windows-focused (winget / `%LOCALAPPDATA%` / npm). macOS/Linux paths not yet added; on those
   OSes it degrades to PATH-only. Add per-OS candidates when the fork runs there.
